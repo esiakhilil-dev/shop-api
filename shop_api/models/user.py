@@ -1,22 +1,12 @@
-from pydantic import BaseModel, Field
+from sqlalchemy import Boolean, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
 
+from shop_api.db.base import Base
 
-class UserCreate(BaseModel):
-    username: str = Field(min_length=3, max_length=50)
-    password: str = Field(min_length=6, max_length=128)
+class UserDB(Base):
+    __tablename__ = "users"
 
-
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-
-class UserOut(BaseModel):
-    id: int
-    username: str
-    is_admin: bool
-
-
-class TokenOut(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
