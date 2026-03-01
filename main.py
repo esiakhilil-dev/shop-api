@@ -1,8 +1,7 @@
 from fastapi import FastAPI
-
+import shop_api.models
 from shop_api.db.base import Base
 from shop_api.db.session import engine
-from shop_api.models import user, product, order  # noqa: F401
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from jose import JWTError
 from sqlalchemy.orm import Session
