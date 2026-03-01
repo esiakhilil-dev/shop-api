@@ -1,8 +1,7 @@
-﻿from sqlalchemy import Integer, Numeric, String
+from sqlalchemy import Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from shop_api.db.base import Base
-
 
 class ProductDB(Base):
     __tablename__ = "products"

@@ -11,6 +11,7 @@ ALGORITHM = "HS256"
 
 
 def hash_password(password: str) -> str:
+    print("HASHING len chars:", len(password), "bytes:", len(password.encode("utf-8")))
     return pwd_context.hash(password)
 
 
