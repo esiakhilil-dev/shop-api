@@ -11,12 +11,13 @@ ALGORITHM = "HS256"
 
 
 def hash_password(password: str) -> str:
-    print("HASHING len chars:", len(password), "bytes:", len(password.encode("utf-8")))
-    return pwd_context.hash(password)
+    # bcrypt only uses first 72 bytes
+    pw = password.encode("utf-8")[:72]
+    return pwd_context.hash(pw.decode("utf-8", errors="ignore"))
 
-
-def verify_password(password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(password, hashed_password)
+def verify_password(password: str, hashed: str) -> bool:
+    pw = password.encode("utf-8")[:72]
+    return pwd_context.verify(pw.decode("utf-8", errors="ignore"), hashed)
 
 
 def create_access_token(subject: str, expires_minutes: Optional[int] = None) -> str:
