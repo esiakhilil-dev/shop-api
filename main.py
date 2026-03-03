@@ -30,11 +30,14 @@ def health():
 
 @app.post("/register", response_model=UserOut, status_code=201)
 def register(payload: UserCreate, db: Session = Depends(get_db)):
+    pw = payload.password
+    print("PW len chars:", len(pw), "bytes:", len(pw.encode("utf-8")))
     # Check username unique -> 409
     existing = db.query(UserDB).filter(UserDB.username == payload.username).first()
     if existing:
         raise HTTPException(status_code=409, detail="Username already exists")
-
+    print("DEBUG password length:", len(payload.password), "value:", repr(payload.password[:30]))
+    
     user = UserDB(
         username=payload.username,
         hashed_password=hash_password(payload.password),
