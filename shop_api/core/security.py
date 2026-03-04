@@ -3,13 +3,14 @@ from typing import Any, Optional
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from fastapi.security import OAuth2PasswordBearer
 
 from shop_api.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 
-
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 def hash_password(password: str) -> str:
     # bcrypt only uses first 72 bytes
     pw = password.encode("utf-8")[:72]
