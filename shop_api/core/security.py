@@ -14,12 +14,11 @@ from sqlalchemy.orm import Session
 
 from shop_api.db.deps import get_db
 from shop_api.models.user import UserDB
-from shop_api.core.security import decode_token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 security = HTTPBearer()
-
+bearer_scheme = HTTPBearer(auto_error=True)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 def hash_password(password: str) -> str:
     # bcrypt only uses first 72 bytes
@@ -40,7 +39,7 @@ def create_access_token(subject: str, expires_minutes: Optional[int] = None) -> 
 
 def decode_token(token: str) -> dict[str, Any]:
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
-bearer_scheme = HTTPBearer(auto_error=True)
+
 def get_current_user(
     creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db),
