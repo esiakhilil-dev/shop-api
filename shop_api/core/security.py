@@ -9,9 +9,11 @@ from shop_api.core.config import settings
 from shop_api.db.deps import get_db
 from shop_api.models.user import UserDB
 from shop_api.core.security import decode_token
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
+security = HTTPBearer()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 def hash_password(password: str) -> str:
@@ -34,23 +36,14 @@ def create_access_token(subject: str, expires_minutes: Optional[int] = None) -> 
 def decode_token(token: str) -> dict[str, Any]:
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-) -> UserDB:
-    try:
-        payload = decode_token(token)
-        sub = payload.get("sub")
-        if not sub:
-            raise HTTPException(status_code=401, detail="Invalid token")
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    token = credentials.credentials
 
-        user = db.query(UserDB).filter(UserDB.id == int(sub)).first()
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
+    payload = decode_token(token)
+    user_id = payload.get("sub")
 
-        return user
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-        )
+    return user_id

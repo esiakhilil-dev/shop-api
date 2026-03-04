@@ -5,6 +5,7 @@ from shop_api.db.session import engine
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from jose import JWTError
 from sqlalchemy.orm import Session
+from shop_api.core.security import get_current_user
 
 from shop_api.core.security import (
     create_access_token,
@@ -58,25 +59,6 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
     token = create_access_token(subject=str(user.id))
     return TokenOut(access_token=token)
 
-
-def get_current_user(
-    authorization: str | None = Header(default=None),
-    db: Session = Depends(get_db),
-) -> UserDB:
-    if not authorization or not authorization.lower().startswith("bearer "):
-        raise HTTPException(status_code=401, detail="Missing bearer token")
-
-    token = authorization.split(" ", 1)[1].strip()
-    try:
-        payload = decode_token(token)
-        user_id = int(payload.get("sub"))
-    except (JWTError, TypeError, ValueError):
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    user = db.query(UserDB).filter(UserDB.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    return user
 
 
 @app.get("/me", response_model=UserOut)
