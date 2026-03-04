@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 from shop_api.core.config import settings
 from shop_api.db.deps import get_db
 from shop_api.models.user import UserDB
-from shop_api.core.security import decode_token
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
