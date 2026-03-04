@@ -9,6 +9,12 @@ from shop_api.core.config import settings
 from shop_api.db.deps import get_db
 from shop_api.models.user import UserDB
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends,status
+from sqlalchemy.orm import Session
+
+from shop_api.db.deps import get_db
+from shop_api.models.user import UserDB
+from shop_api.core.security import decode_token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
@@ -34,15 +40,19 @@ def create_access_token(subject: str, expires_minutes: Optional[int] = None) -> 
 
 def decode_token(token: str) -> dict[str, Any]:
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+bearer_scheme = HTTPBearer(auto_error=True)
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    token = credentials.credentials
-
+    creds: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    db: Session = Depends(get_db),
+) -> UserDB:
+    token = creds.credentials  # <-- ONLY the token, no "Bearer"
     payload = decode_token(token)
-    user_id = payload.get("sub")
-
-    if not user_id:
+    sub = payload.get("sub")
+    if not sub:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    return user_id
+    user = db.query(UserDB).filter(UserDB.username == sub).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return user

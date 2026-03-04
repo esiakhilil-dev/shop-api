@@ -56,7 +56,7 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
-    token = create_access_token(subject=str(user.id))
+    token = create_access_token(subject=user.username)    
     return TokenOut(access_token=token)
 
 
